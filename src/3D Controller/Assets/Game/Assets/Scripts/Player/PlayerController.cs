@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public Camera fov;
+	public Camera fov;
 	public Rigidbody rb;
 
 	[Header("Ground Check"), Space(5f)]
@@ -43,32 +41,30 @@ public class PlayerController : MonoBehaviour
 	}
 
 	private void Update()
-	{		
+	{
+		var x = Input.GetAxis("Horizontal");
+		var z = Input.GetAxis("Vertical");
+
 		currentRotation.x -= Input.GetAxisRaw("Mouse Y") * Sensitivity;
 		currentRotation.y += Input.GetAxisRaw("Mouse X") * Sensitivity;
 
-		currentRotation.x = Mathf.Clamp(currentRotation.x, -maxYAngle, maxYAngle);
-		
+		var n = fov.transform.rotation.normalized;
+		rb.MovePosition(rb.position + (n * new Vector3(x, 0, z) * Speed * Time.deltaTime));
 
 		if (CanJump && Input.GetButtonUp("Jump"))
 			rb.velocity = new Vector3(0, 20, 0);
 	}
-
 	private void FixedUpdate()
 	{
+		currentRotation.x = Mathf.Clamp(currentRotation.x, -maxYAngle, maxYAngle);
+
 		transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, currentRotation.y, 0), RotationDamping * Time.deltaTime);
 		fov.transform.rotation = Quaternion.Lerp(fov.transform.rotation, Quaternion.Euler(currentRotation.x, transform.rotation.eulerAngles.y, 0), RotationDamping * Time.deltaTime);
 
-
 		CanJump = Physics.CheckSphere(GroundCheck.position, GroundCheckRadius, GroundLayer);
-
-		var x = Input.GetAxis("Horizontal");
-		var z = Input.GetAxis("Vertical");
-		var n = fov.transform.rotation.normalized;
-		rb.MovePosition(rb.position + (n * new Vector3(x, 0, z) * Speed * Time.deltaTime));
 	}
 
-	#if UNITY_EDITOR
+#if UNITY_EDITOR
 
 	private void OnDrawGizmos()
 	{
@@ -79,5 +75,5 @@ public class PlayerController : MonoBehaviour
 		Gizmos.DrawWireSphere(GroundCheck.position, GroundCheckRadius);
 	}
 
-	#endif
+#endif
 }
